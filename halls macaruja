@@ -1,0 +1,50 @@
+import discord
+from discord.ext import commands
+import random
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+
+@bot.event
+async def on_ready():
+    print(f"Bot conectado como {bot.user}")
+
+
+@bot.command()
+async def halls(ctx):
+
+    respostas = [
+        "Sim! Pega aqui 🍬",
+        "Só um Halls? Tá bom.",
+        "Halls liberado.",
+        "Toma, mas não pede outro.",
+        "🍬 <@1288663589904977952> HALLS ENTREGUE 🍬"
+    ]
+
+    await ctx.send(random.choice(respostas))
+
+
+@bot.command()
+async def larry(ctx):
+    await ctx.send("<@1288663589904977952> PEGAR HALLS SHINY")
+
+
+@bot.command()
+async def blue(ctx):
+    await ctx.send("<@1288663589904977952> HALLS BLUEBERRY")
+
+
+@bot.command()
+async def gorango(ctx):
+    await ctx.send("<@1288663589904977952> HALLS MORANGO")
+
+
+@bot.command()
+async def enaldinho(ctx):
+    await ctx.send("<@1407424827236814941> PEGAR GULOSSAURO SHINY!!!!!")
+
+
+bot.run("SEU_TOKEN_AQUI")
