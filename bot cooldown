@@ -1,0 +1,85 @@
+import os
+import random
+import discord
+from discord import app_commands
+from discord.ext import commands
+from dotenv import load_dotenv
+
+load_dotenv()
+
+TOKEN = os.getenv("DISCORD_TOKEN")
+if not TOKEN:
+    raise RuntimeError("DISCORD_TOKEN não foi configurado no arquivo .env")
+
+HALLS_USER_ID = int(os.getenv("HALLS_USER_ID", "1288663589904977952"))
+GULOSSAURO_USER_ID = int(os.getenv("GULOSSAURO_USER_ID", "1407424827236814941"))
+DEV_GUILD_ID = os.getenv("DEV_GUILD_ID")  # opcional: sync rápido em dev
+
+def mention(user_id: int) -> str:
+    return f"<@{user_id}>"
+
+HALLS_RESPONSES = [
+    "Sim! Pega aqui 🍬",
+    "Só um Halls? Tá bom.",
+    "Halls liberado.",
+    "Toma, mas não pede outro.",
+    f"🍬 {mention(HALLS_USER_ID)} HALLS ENTREGUE 🍬",
+]
+
+class HallsBot(commands.Bot):
+    def __init__(self):
+        super().__init__(command_prefix="!", intents=discord.Intents.default())
+
+    async def setup_hook(self):
+        if DEV_GUILD_ID:
+            guild = discord.Object(id=int(DEV_GUILD_ID))
+            self.tree.copy_global_to(guild=guild)
+            synced = await self.tree.sync(guild=guild)
+        else:
+            synced = await self.tree.sync()
+        print(f"{len(synced)} comando(s) sincronizado(s)")
+
+bot = HallsBot()
+
+@bot.event
+async def on_ready():
+    print(f"Bot conectado como {bot.user}")
+
+@bot.tree.error
+async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    if isinstance(error, app_commands.CommandOnCooldown):
+        await interaction.response.send_message(
+            f"Calma! Tenta de novo em {error.retry_after:.0f}s.", ephemeral=True
+        )
+    else:
+        print(f"Erro no comando: {error}")
+        if not interaction.response.is_done():
+            await interaction.response.send_message("Deu ruim, tenta de novo.", ephemeral=True)
+
+cooldown = app_commands.checks.cooldown(1, 30.0, key=lambda i: i.user.id)
+
+@bot.tree.command(name="halls", description="Pega um Halls!")
+async def halls(interaction: discord.Interaction):
+    await interaction.response.send_message(random.choice(HALLS_RESPONSES))
+
+@bot.tree.command(name="larry", description="Halls Shiny!")
+@cooldown
+async def larry(interaction: discord.Interaction):
+    await interaction.response.send_message(f"{mention(HALLS_USER_ID)} PEGAR HALLS SHINY")
+
+@bot.tree.command(name="blue", description="Halls Blueberry!")
+@cooldown
+async def blue(interaction: discord.Interaction):
+    await interaction.response.send_message(f"{mention(HALLS_USER_ID)} HALLS BLUEBERRY")
+
+@bot.tree.command(name="gorango", description="Halls Morango!")
+@cooldown
+async def gorango(interaction: discord.Interaction):
+    await interaction.response.send_message(f"{mention(HALLS_USER_ID)} HALLS MORANGO")
+
+@bot.tree.command(name="enaldinho", description="Gulossauro Shiny!")
+@cooldown
+async def enaldinho(interaction: discord.Interaction):
+    await interaction.response.send_message(f"{mention(GULOSSAURO_USER_ID)} PEGAR GULOSSAURO SHINY!!!!!")
+
+bot.run(TOKEN)
