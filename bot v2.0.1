@@ -1,0 +1,62 @@
+import os
+import random
+from dotenv import load_dotenv
+
+import discord
+from discord.ext import commands
+
+load_dotenv()
+
+TOKEN = os.getenv("DISCORD_TOKEN")
+HALLS_USER_ID = 1288663589904977952
+GULOSSAURO_USER_ID = 1407424827236814941
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+HALLS_RESPONSES = [
+    "Sim! Pega aqui 🍬",
+    "Só um Halls? Tá bom.",
+    "Halls liberado.",
+    "Toma, mas não pede outro.",
+    f"🍬 <@{HALLS_USER_ID}> HALLS ENTREGUE 🍬",
+]
+
+def mention(user_id: int) -> str:
+    return f"<@{user_id}>"
+
+@bot.event
+async def on_ready():
+    print(f"Bot conectado como {bot.user}")
+    try:
+        synced = await bot.tree.sync()
+        print(f"{len(synced)} comando(s) sincronizado(s)")
+    except Exception as e:
+        print(f"Erro ao sincronizar comandos: {e}")
+
+@bot.tree.command(name="halls", description="Pega um Halls!")
+async def halls(interaction: discord.Interaction):
+    await interaction.response.send_message(random.choice(HALLS_RESPONSES))
+
+@bot.tree.command(name="larry", description="Halls Shiny!")
+async def larry(interaction: discord.Interaction):
+    await interaction.response.send_message(f"{mention(HALLS_USER_ID)} PEGAR HALLS SHINY")
+
+@bot.tree.command(name="blue", description="Halls Blueberry!")
+async def blue(interaction: discord.Interaction):
+    await interaction.response.send_message(f"{mention(HALLS_USER_ID)} HALLS BLUEBERRY")
+
+@bot.tree.command(name="gorango", description="Halls Morango!")
+async def gorango(interaction: discord.Interaction):
+    await interaction.response.send_message(f"{mention(HALLS_USER_ID)} HALLS MORANGO")
+
+@bot.tree.command(name="enaldinho", description="Gulossauro Shiny!")
+async def enaldinho(interaction: discord.Interaction):
+    await interaction.response.send_message(f"{mention(GULOSSAURO_USER_ID)} PEGAR GULOSSAURO SHINY!!!!!")
+
+if not TOKEN:
+    raise RuntimeError("DISCORD_TOKEN não foi configurado no arquivo .env")
+
+bot.run(TOKEN)
